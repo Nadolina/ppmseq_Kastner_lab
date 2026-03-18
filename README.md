@@ -47,6 +47,7 @@ sbatch /data/Kastner_PFS/scripts/pipelines/ppmseq/submit_srsnv.sh -s [SAMPLE NAM
 ### Requirements 
 
 1. use of the python environment /data/Kastner_PFS/scripts/pipelines/ppmSeq-venv
+2. /data/Kastner_PFS/scripts/pipelines/ppmseq/pq_to_vcf_header.txt
 
 
 ### The python venv 
