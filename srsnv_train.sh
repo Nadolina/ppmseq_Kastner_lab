@@ -57,24 +57,25 @@ singularity exec ${SIF_SRSNV} \
     --model-params $XGBOOST_PARAMS \
     --features $FEATURES \
     --basename $BASE \
-    --output . \
+    --output ${BASE} \
     --random-seed ${RANDOM_SEED} \
     --verbose
 
 # 6. Inference
-mkdir -p ${SAMPLE}/model_files
-cp ${SAMPLE}/${BASE}.model_fold_*.json ${SAMPLE}/model_files/
-cp ${SAMPLE}/${BASE}.srsnv_metadata.json ${SAMPLE}/model_files/srsnv_metadata.json
+# mkdir -p ${SAMPLE}/model_files
+# cp ${BASE}.model_fold_*.json ${SAMPLE}/model_files/
+# cp ${BASE}.srsnv_metadata.json ${SAMPLE}/model_files/
 
 singularity exec ${SIF_FEATUREMAP} \
-    snvqual ${SAMPLE}/${BASE}.raw.featuremap.vcf.gz ${SAMPLE}/${BASE}.featuremap.vcf.gz model_files/srsnv_metadata.json -v
+    snvqual ${SAMPLE}/${BASE}.raw.featuremap.vcf.gz ${SAMPLE}/${BASE}.featuremap.vcf.gz ${SAMPLE}/${BASE}.srsnv_metadata.json -v
 bcftools index -t ${SAMPLE}/${BASE}.featuremap.vcf.gz
 
 # 7. Report
 singularity exec ${SIF_SRSNV} \
     srsnv_report \
     --featuremap-df ${SAMPLE}/${BASE}.featuremap_df.parquet \
-    --srsnv-metadata ${SAMPLE}/model_files/srsnv_metadata.json \
-    --report-path . \
+    --srsnv-metadata ${SAMPLE}/${BASE}.srsnv_metadata.json \
+    --report-path ${BASE} \
     --basename ${BASE} \
+    --models-prefix ${BASE}/${BASE}.model_fold_ \
     --verbose

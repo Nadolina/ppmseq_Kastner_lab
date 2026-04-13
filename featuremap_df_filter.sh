@@ -43,7 +43,11 @@ MAX_COV_FACTOR=2.0            # max_coverage_factor
 RANDOM_SEED=0
 NUM_FOLDS=3                   # num_CV_folds
 
-MEAN_COVERAGE_FILE=${BASE}.mean_coverage.txt
+MEAN_COVERAGE_FILE=${SAMPLE}/${BASE}.mean_coverage.txt
+if [ ! -f "${MEAN_COVERAGE_FILE}" ]; then
+    echo "Error: Mean coverage file not found"
+    exit 1
+fi
 MEAN_COVERAGE=$(cat "$MEAN_COVERAGE_FILE")
 echo "Mean coverage: $MEAN_COVERAGE"
 COVERAGE_CEIL=$(printf "%.0f" "$(echo "$MEAN_COVERAGE * $MAX_COV_FACTOR" | bc -l)")
