@@ -21,6 +21,7 @@ done
 set -euo pipefail
 module load bcftools
 module load singularity
+ls -l /usr/local/current/singularity/app_conf/sing_binds
 . /usr/local/current/singularity/app_conf/sing_binds ##following NIH recommendations on singularity use https://hpc.nih.gov/apps/singularity.html
 export SINGULARITY_BINDPATH="/data/$USER,/data/Kastner_PFS,/fdb,/lscratch/$SLURM_JOB_ID:/tmp"
 SIF_SRSNV=/data/Kastner_PFS/ppmSeq/container/ugbio_srsnv_1.18.0.sif ## from https://hub.docker.com/r/ultimagenomics/featuremap
@@ -30,7 +31,7 @@ BASE=${SAMPLE}
 CRAM=${CRAM}
 CRAM_INDEX=${CRAM}.crai
 CRAM_PREFIX=$(basename "$CRAM" | sed 's/.cram//g')
-SORTER_STATS=/data/Kastner_PFS/ppmSeq/2025/${SAMPLE}/${CRAM_PREFIX}.json
+SORTER_STATS=/data/Kastner_PFS/ppmSeq/2025/${BASE}/${CRAM_PREFIX}.json
 REF=/data/Kastner_PFS/references/HG38/Homo_sapiens_assembly38.fasta
 TRAINING_REGIONS=/data/Kastner_PFS/references/HG38/ultima_genomics/ug_rare_variant_hcr.Homo_sapiens_assembly38.interval_list.gz
 TRAINING_REGIONS_INDEX=${TRAINING_REGIONS}.tbi
@@ -70,6 +71,11 @@ singularity exec ${SIF_SRSNV} \
     --sorter-stats-json ${SORTER_STATS} \
     --output ${SAMPLE}/${MEAN_COVERAGE_FILE}
 
+if [ ! -f "${SAMPLE}/${MEAN_COVERAGE_FILE}" ]; then
+    echo "Error: Mean coverage file not found"
+    exit 1
+fi
+
 MEAN_COVERAGE=$(cat "${SAMPLE}/${MEAN_COVERAGE_FILE}")
 echo "Mean coverage: $MEAN_COVERAGE"
 COVERAGE_CEIL=$(printf "%.0f" "$(echo "$MEAN_COVERAGE * $MAX_COV_FACTOR" | bc -l)")
@@ -91,6 +97,6 @@ singularity exec ${SIF_FEATUREMAP} \
 singularity exec ${SIF_SRSNV} \
     bcftools index -f -t ${SAMPLE}/${BASE}.raw.featuremap.vcf.gz
 singularity exec ${SIF_SRSNV} \
-    bcftools index -f -t ${BASE}.random_sample.featuremap.vcf.gz
+    bcftools index -f -t ${SAMPLE}/${BASE}.random_sample.featuremap.vcf.gz
 
 
