@@ -46,14 +46,28 @@ sbatch /data/Kastner_PFS/scripts/pipelines/ppmseq/submit_srsnv.sh -s [SAMPLE NAM
 
 ### Requirements 
 
-1. use of the python environment /data/Kastner_PFS/scripts/pipelines/ppmSeq-venv
-2. /data/Kastner_PFS/scripts/pipelines/ppmseq/pq_to_vcf_header.txt
+1. mamba
+2. use of a mamba environment with dependencies not available through biowulf modules
 
+### Mamba on biowulf 
 
-### The python venv 
+There are a couple softwares not available on biowulf that are required to run this filtering workflow. To workaround this, I have created a mamba environment that can be shared, but users will need their own mamba set up. Please refer to https://hpc.nih.gov/docs/diy_installation/conda.html for details, but to summarize:
+1. start an sinteractive
+2. load the mamba_install module on biowulf
+3. run mamba_install to install conda
+4. to use mamba, you need to source the install
+```
+[user@biowulf]$ sinteractive --mem=20g --gres=lscratch:20
+[user@cn3444]$ module load mamba_install
+[user@cn3444]$ mamba_install
+...
+[user@cn3444]$ source myconda
+[user@cn3444]$ mamba --help
+```
 
-1. updated pyarrow because the biowulf pyarrow is version 6.0.1 but the latest (Feb 2026) is v. 23.0.1.
-2. vcf2parquet (https://github.com/natir/vcf2parquet)
+### The mamba "environment"
+
+Environments are useful programming tools to keep software installations and versions separated for different tasks or workflows. They also allow users to maintain consistency in collaborative projects. 
 
 
 
