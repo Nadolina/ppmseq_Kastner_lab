@@ -111,8 +111,8 @@ The goal of this workflow is to remove low quality reads from variant records in
 ### Outputs
 
 The final filtered and normalized VCFs will have the naming scheme:
-[SAMPLE].featuremap.exome.SNVQ60.norm.vcf.gz 
-[SAMPLE].featuremap.exome.SNVQ55_stMIXED.norm.vcf.gz 
+* [SAMPLE].featuremap.exome.SNVQ60.norm.vcf.gz 
+* [SAMPLE].featuremap.exome.SNVQ55_stMIXED.norm.vcf.gz 
 
 
     
