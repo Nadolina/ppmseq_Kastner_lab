@@ -29,9 +29,9 @@ The original pipeline is compiled into one script which can be found here: https
 The __first step__, snvfind.sh, runs with low memory and CPU allocations. It generates coverage information, and produces a raw and sampled VCF that they call "featuremaps". 
 
 The __second step__, featuremap_df_filter.sh:
-1. generates a parquet style dataframe from the training regions in the featuremap
-2. performs 'pre-filtering', which seems to be some basic QC
-3. assigns false positive, true positive and negative labels to the training set
+* generates a parquet style dataframe from the training regions in the featuremap
+* performs 'pre-filtering', which seems to be some basic QC
+* assigns false positive, true positive and negative labels to the training set
 
 In the __final script__, called srsnv_train.sh, these training sets are used to develop a model for distinguishing between true and artifact SNPs. This model is then applied back to the whole raw featuremap, resulting in a final featuremap parquet and an HTML report. 
 
@@ -39,7 +39,7 @@ Please refer to the Ultima Genomics github linked earlier for more information o
 
 ### Getting started 
 ```
-sbatch /data/Kastner_PFS/scripts/pipelines/ppmseq/submit_srsnv.sh -s [SAMPLE NAME] -c [PATH TO CRAM]
+sbatch /data/Kastner_PFS/scripts/pipelines/ppmseq/submit_srsnv.sh -s [SAMPLE ID] -c [PATH TO CRAM]
 ```
 
 ## 2. Filtering SR-SNV variants 
@@ -47,11 +47,11 @@ sbatch /data/Kastner_PFS/scripts/pipelines/ppmseq/submit_srsnv.sh -s [SAMPLE NAM
 ### Requirements 
 
 1. mamba
-2. use of a mamba environment with dependencies not available through biowulf modules
+2. use of a mamba environment with dependencies not available through biowulf modules (ppmseq_env.yml)
 
 ### Mamba on biowulf 
 
-There are a couple softwares not available on biowulf that are required to run this filtering workflow. To workaround this, I have created a mamba environment that can be shared, but users will need their own mamba set up. Please refer to https://hpc.nih.gov/docs/diy_installation/conda.html for details, but to summarize:
+There are a couple softwares not available on biowulf that are required to run this filtering workflow. To workaround this, I have created a mamba environment that can be shared, but users will need their own mamba installation. Please refer to https://hpc.nih.gov/docs/diy_installation/conda.html for details, but to summarize:
 1. start an sinteractive
 2. load the mamba_install module on biowulf
 3. run mamba_install to install conda
@@ -67,8 +67,52 @@ There are a couple softwares not available on biowulf that are required to run t
 
 ### The mamba "environment"
 
-Environments are useful programming tools to keep software installations and versions separated for different tasks or workflows. They also allow users to maintain consistency in collaborative projects. 
+Environments are useful programming tools to keep software installations and versions separated for different tasks or workflows, and avoid installation conflicts. They also allow users to maintain consistency in collaborative projects. 
+
+Now that we have mamba install, we can set up the environment required for the ppmseq filtering workflow. To start: 
+1.  copy the YAML file to your working directory
+2.  source your mamba your mamba install if you haven't already
+3.  clone the environment from the YAML
+4.  activate the env
+```
+source myconda
+mamba env create -f ppmseq-env.yml
+mamba activate ppmseqenv
+```
+**Troubleshooting note**:
+If the "source myconda" does **not** work, you can try to run the following, which worked for a colleague. 
+```
+eval "$(mamba shell hook --shell bash)" 
+```
+And then, try "mamba activate ppmseqenv" again. 
+
+### Getting started 
+The only input required is the sample name. 
+```
+sbatch --mem=20g -c 8 --gres=lscratch:100 /data/Kastner_PFS/scripts/pipelines/ppmseq/run_SNVQ_filter.sh -s [SAMPLE ID]
+sbatch --mem=20g -c 8 --gres=lscratch:100 /data/Kastner_PFS/scripts/pipelines/ppmseq/run_SNVQ_filter.sh -s 5447_2
+```
+
+### Summary of the workflow 
+
+The goal of this workflow is to remove low quality reads from variant records in the outputs produced by SR-SNV. To summarize, we:
+*  filter the *featuremap.vcf.gz to exome intervals
+*  convert the exome VCF to a parquet file, for ease of use with pandas
+*  expand the variant records to one-record-per-read
+*  remove records/reads that do not meet one of the following filters:
+    +  SNVQ > 55 & MIXED start-tag
+    +  OR SNVQ >= 60 (regardless of start-tag type)
+*  re-aggregate reads per-variant, and assign genotype based on VAF
+    +  \> 0.8 homozygous (alternate)
+    +  < 0.8 heterozygous
+*  generate a VCF for the retained varaints of each of the two filters
+*  normalize the variant records with pysam.bcftools 
+
+### Outputs
+
+The final filtered and normalized VCFs will have the naming scheme:
+[SAMPLE].featuremap.exome.SNVQ60.norm.vcf.gz 
+[SAMPLE].featuremap.exome.SNVQ55_stMIXED.norm.vcf.gz 
 
 
-
-
+    
