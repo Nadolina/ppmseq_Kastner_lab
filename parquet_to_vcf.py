@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import pandas as pd
 import pyarrow.parquet as pq
 import numpy as np
@@ -68,9 +66,9 @@ with open(f'{workdir}/{outfile}', 'w') as vcf_file:
 
             info="."
 
-            if row.VAF[0] < 90:
+            if row.VAF[0] < 0.8:
                 GT="0/1"
-            elif row.VAF[0] >= 90:
+            elif row.VAF[0] >= 0.8:
                 GT="1/1"
             else:
                 GT="NA"

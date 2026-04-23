@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-
 import pandas as pd
 import pyarrow.parquet as pq
 import numpy as np
 import argparse
 import pysam.bcftools
+import os
 
 ## Parsing sample ID from command line input 
 p=argparse.ArgumentParser()
@@ -21,7 +20,7 @@ if args.ug_sample:
 ## Getting working directory
 workdir=os.getcwd()
 
-p_path=f'{workdir}/{sample}/{sample}.featuremap.exomes.parquet'
+p_path=f'{workdir}/{sample}/{sample}.featuremap.exome.parquet'
 p=pq.ParquetFile(p_path)
 
 ## VARIABLES --------------
@@ -35,8 +34,8 @@ columns_to_remove_full=[f'format_{ug_sample}_{col}' for col in columns_to_remove
 columns_to_explode_full=[f'format_{ug_sample}_{col}' for col in columns_to_explode]
     
 idxcols=["chromosome","position","reference","alternate"]
-output_parquet1=f'{workdir}/{sample}/{sample}.featuremap.exomes.SNVQ55_stMIXED.parquet'
-output_parquet2=f'{workdir}/{sample}/{sample}.featuremap.exomes.SNVQ60.parquet'
+output_parquet1=f'{workdir}/{sample}/{sample}.featuremap.exome.SNVQ55_stMIXED.parquet'
+output_parquet2=f'{workdir}/{sample}/{sample}.featuremap.exome.SNVQ60.parquet'
 
 ## FUNCTIONS ------------------------------------------------------------------
 
