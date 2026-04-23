@@ -1,8 +1,8 @@
 #!/bin/sh 
 
 #SBATCH --job-name=srsnv-df-filter
-#SBATCH --cpus-per-task=25
-#SBATCH --mem=250g
+#SBATCH --cpus-per-task=50
+#SBATCH --mem=350g
 #SBATCH --time=24:00:00
 #SBATCH --gres=lscratch:800
 #SBATCH --output=logs/lowmem_%j.out
