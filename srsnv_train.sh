@@ -21,6 +21,10 @@ set -euo pipefail
 module load bcftools
 module load singularity
 
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
 ## docker/singularity containers 
 . /usr/local/current/singularity/app_conf/sing_binds
 export SINGULARITY_BINDPATH="/data/$USER,/data/Kastner_PFS,/fdb,/lscratch/$SLURM_JOB_ID:/tmp"

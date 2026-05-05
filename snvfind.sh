@@ -21,6 +21,11 @@ done
 set -euo pipefail
 module load bcftools
 module load singularity
+
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
 ls -l /usr/local/current/singularity/app_conf/sing_binds
 . /usr/local/current/singularity/app_conf/sing_binds ##following NIH recommendations on singularity use https://hpc.nih.gov/apps/singularity.html
 export SINGULARITY_BINDPATH="/data/$USER,/data/Kastner_PFS,/fdb,/lscratch/$SLURM_JOB_ID:/tmp"
@@ -32,6 +37,9 @@ CRAM=${CRAM}
 CRAM_INDEX=${CRAM}.crai
 CRAM_PREFIX=$(basename "$CRAM" | sed 's/.cram//g')
 SORTER_STATS=/data/Kastner_PFS/ppmSeq/2025/${BASE}/${CRAM_PREFIX}.json
+
+echo "Statistics file for sample ${SAMPLE}: ${SORTER_STATS}"
+
 REF=/data/Kastner_PFS/references/HG38/Homo_sapiens_assembly38.fasta
 TRAINING_REGIONS=/data/Kastner_PFS/references/HG38/ultima_genomics/ug_rare_variant_hcr.Homo_sapiens_assembly38.interval_list.gz
 TRAINING_REGIONS_INDEX=${TRAINING_REGIONS}.tbi
@@ -66,6 +74,8 @@ DOWNSAMPLING_RATE=$(awk -v num=$RANDOM_SAMPLE_SIZE -v den=$TOTAL_ALIGNED_BASES '
 echo "Downsampling rate: $DOWNSAMPLING_RATE"
 
 MEAN_COVERAGE_FILE=${BASE}.mean_coverage.txt
+echo "Calculating mean coverage and writing to ${SAMPLE}/${MEAN_COVERAGE_FILE}"
+
 singularity exec ${SIF_SRSNV} \
     sorter_stats_to_mean_coverage \
     --sorter-stats-json ${SORTER_STATS} \

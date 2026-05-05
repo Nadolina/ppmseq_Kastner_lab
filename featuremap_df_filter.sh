@@ -1,7 +1,7 @@
 #!/bin/sh 
 
 #SBATCH --job-name=srsnv-df-filter
-#SBATCH --cpus-per-task=50
+#SBATCH --cpus-per-task=24
 #SBATCH --mem=350g
 #SBATCH --time=24:00:00
 #SBATCH --gres=lscratch:800
@@ -20,6 +20,10 @@ done
 set -euo pipefail
 module load bcftools
 module load singularity
+
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 
 ## docker/singularity containers 
 . /usr/local/current/singularity/app_conf/sing_binds
@@ -66,7 +70,9 @@ singularity exec ${SIF_SRSNV} \
     featuremap_to_dataframe \
     --input ${SAMPLE}/${BASE}.raw.training_regions.vcf.gz \
     --output ${SAMPLE}/${BASE}.raw.training_regions.parquet \
-    --drop-format GT AD X_TCM 
+    --drop-format GT AD X_TCM \
+    --jobs 4 \
+    --verbose
 
 #   c) Filter + label (RAW_VAF <= MAX_VAF_FOR_FP) + downsample to FP_TRAIN_SET_SIZE
 singularity exec ${SIF_SRSNV} \
@@ -96,7 +102,9 @@ singularity exec ${SIF_SRSNV} \
     featuremap_to_dataframe \
     --input ${SAMPLE}/${BASE}.rs.training_regions.vcf.gz \
     --output ${SAMPLE}/${BASE}.rs.training_regions.parquet \
-    --drop-format GT AD X_TCM
+    --drop-format GT AD X_TCM \
+    --jobs 4 \
+    --verbose 
 
 #   c) Filter + label (REF == ALT) + downsample to TP_TRAIN_SET_SIZE
 singularity exec ${SIF_SRSNV} \
